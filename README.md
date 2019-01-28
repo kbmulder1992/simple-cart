@@ -17,4 +17,4 @@ Simple Cart &amp; Order checkout using Symfony (PHP)
 - Run `php bin/console server:run 127.0.0.1:8080` to view in local browser
   - Browse to `http://127.0.0.1:8080` and ensure you receive the home page.
   - If no products are loaded on the home page, browse to the following url to initialise sample product data:
-    - http://localhost:9000/initialise-product-data
+    - `http://localhost:9000/initialise-product-data`

@@ -1,6 +1,7 @@
 {
     "name": "kmulder/simple-cart",
     "description": "Simple Cart using Symfony",
+    "version": "0.0.0",
     "authors": [
         {
             "name": "Kyle Mulder",

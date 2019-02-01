@@ -15,11 +15,20 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class CartItemRepository extends ServiceEntityRepository
 {
+    /**
+     * CartItemRepository constructor.
+     * @param RegistryInterface $registry
+     */
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, CartItem::class);
     }
 
+    /**
+     * @param CartItem $cartItem
+     * @return CartItem
+     * @throws Exception
+     */
     public function save(CartItem $cartItem): CartItem
     {
         try {
@@ -36,7 +45,21 @@ class CartItemRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
             return $cartItem;
         } catch (Exception $exception) {
-            throw new Exception("Failed to save cart item to database. Error: " . $exception->getMessage(), $exception);
+            throw new Exception("Failed to save cart item to database. Error: " . $exception->getMessage());
+        }
+    }
+
+    /**
+     * @param CartItem $cartItem
+     * @throws Exception
+     */
+    public function delete(CartItem $cartItem): void
+    {
+        try {
+            $this->getEntityManager()->remove($cartItem);
+            $this->getEntityManager()->flush();
+        } catch (Exception $exception) {
+            throw new Exception("Failed to delete cart item from database. Error: " . $exception->getMessage());
         }
     }
 

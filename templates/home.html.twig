@@ -1,16 +1,51 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Simple Cart - Product Listing{% endblock %}
+{% block title %}Products & Orders Listing{% endblock %}
+
+{% block title_link %}<a href="/cart">View Cart</a>{% endblock %}
 
 {% block body %}
     <h1>Product Listings</h1>
 
     {% if message.valid %}
-        <h3>{{ message.type }}: {{ message.value }}</h3>
+    <h3>{{ message.value }}</h3>
     {% endif %}
+
+    {% if products.items is empty %}
+    <p>There are currently no products. Consider generating some by <a href="/initialise-product-data">clicking here</a>!</p>
+    {% endif %}
+
     <ul>
         {% for product in products.items %}
-        <li>{{ product.name }} - <a href="/product/{{ product.id }}/add-to-cart">Add to cart for R {{ product.price }}</a></li>
+        <li>{{ product.name }} - <a href="/cart/add-product/{{ product.id }}">Add to cart for R {{ product.price | number_format }}</a></li>
         {% endfor %}
     </ul>
+
+    <h1>Previous Orders</h1>
+    <p>Click on an order to view details</p>
+
+    {% if orders.items is empty %}
+    <p>There are currently no orders. Consider placing one!</p>
+    {% endif %}
+
+    <ul>
+        {% for order in orders.items %}
+        <li><a href="/order/{{ order.id }}/view">Order placed {{ order.createdDate }} for total of R {{ order.total | number_format }} ({{ order.totalItems }} item(s))</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block json_data %}
+    <style>
+        pre {
+            white-space: pre-wrap;       /* Since CSS 2.1 */
+            white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;
+        }
+    </style>
+    <pre>CART :: {{ cart | json_encode }}</pre>
+    <pre>PRODUCTS :: {{ products | json_encode }}</pre>
+    <pre>ORDERS :: {{ orders | json_encode }}</pre>
 {% endblock %}

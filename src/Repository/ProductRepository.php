@@ -46,7 +46,7 @@ class ProductRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
             return $product;
         } catch (Exception $exception) {
-            throw new Exception("Failed to save product to database. Error: " . $exception->getMessage(), $exception);
+            throw new Exception("Failed to save product to database. Error: " . $exception->getMessage());
         }
     }
 }

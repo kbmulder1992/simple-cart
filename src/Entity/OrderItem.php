@@ -5,16 +5,16 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\CartItemRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\OrderItemRepository")
  */
-class CartItem extends AbstractEntity
+class OrderItem extends AbstractEntity
 {
 
     /**
-     * @ORM\ManyToOne(targetEntity = "App\Entity\Cart", inversedBy = "cartItems", cascade = {"persist"})
-     * @var Cart $cart
+     * @ORM\ManyToOne(targetEntity = "App\Entity\Order", inversedBy = "orderItems", cascade = {"persist"})
+     * @var Order $order
      */
-    private $cart;
+    private $order;
 
     /**
      * @ORM\Column(type="integer")
@@ -29,20 +29,20 @@ class CartItem extends AbstractEntity
     private $quantity;
 
     /**
-     * @return Cart|null
+     * @return Order|null
      */
-    public function getCart(): ?Cart
+    public function getOrder(): ?Order
     {
-        return $this->cart;
+        return $this->order;
     }
 
     /**
-     * @param Cart $cart
-     * @return CartItem
+     * @param Order $order
+     * @return OrderItem
      */
-    public function setCart(Cart $cart): self
+    public function setOrder(Order $order): self
     {
-        $this->cart = $cart;
+        $this->order = $order;
 
         return $this;
     }

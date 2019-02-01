@@ -17,7 +17,7 @@ class Cart extends AbstractEntity
     private $userId;
 
     /**
-     * @ORM\Column(type="array", nullable=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\CartItem", mappedBy="cart")
      * @var CartItem[] $cartItems
      */
     private $cartItems = [];
@@ -45,9 +45,9 @@ class Cart extends AbstractEntity
     }
 
     /**
-     * @return array|null
+     * @return CartItem[]|null
      */
-    public function getCartItems(): ?array
+    public function getCartItems()
     {
         return $this->cartItems;
     }

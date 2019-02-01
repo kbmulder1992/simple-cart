@@ -78,17 +78,37 @@ class CartService
     public function calculateCartItemsTotal(Cart $cart): float
     {
         $total = 0;
-        /** @var int $cartItem */
-        foreach ($cart->getCartItems() as $cartItemId) {
-            /** @var CartItem $cartItem */
-            $cartItem = $this->cartRepository->find($cartItemId);
-
+        /** @var CartItem $cartItem */
+        foreach ($cart->getCartItems() as $cartItem) {
             /** @var Product $product */
             $product = $this->productRepository->find($cartItem->getProductId());
-
             /** Up total value with product price */
-            $total += $product->getPrice();
+            $total += ($product->getPrice() * $cartItem->getQuantity());
         }
+        return $total;
+    }
+
+    /**
+     * @param CartItem $cartItem
+     * @param Product|null $product
+     * @return float
+     * @throws \Exception
+     */
+    public function calculateSingleCartItemTotal(CartItem $cartItem, Product $product = null): float
+    {
+        /** If product is null then get it from database */
+        if (is_null($product)) {
+            $product = $this->productRepository->findOneBy(['id' => $cartItem->getProductId()]);
+            /** If product is still null, then delete cart item as product no longer exists */
+            if (is_null($product)) {
+                $this->cartItemRepository->delete($cartItem);
+                return 0;
+            }
+        }
+
+        /** Calculate product price times by cart item quantity */
+        $total = $product->getPrice() * $cartItem->getQuantity();
+
         return $total;
     }
 
@@ -109,7 +129,7 @@ class CartService
         /** If cart item doesn't exist then create one */
         if (is_null($existingCartItem)) {
             $cartItem = new CartItem();
-            $cartItem->setCartId($cart->getId());
+            $cartItem->setCart($cart);
             $cartItem->setProductId($productId);
             $cartItem->setQuantity(1);
         } else {
@@ -118,6 +138,7 @@ class CartService
         }
 
         $this->cartItemRepository->save($cartItem);
+        $this->cartRepository->save($cart);
 
         return $this->cartRepository->find($cart->getId());
     }
@@ -136,20 +157,63 @@ class CartService
          */
         $existingCartItem = $this->getExistingCartItemByProductId($cart, $productId);
 
-        /** ensure cart item does not exist before trying to apply updates */
+        /** ensure cart item does exist before trying to apply updates */
         if ( ! is_null($existingCartItem)) {
             /** If cart item quantity is 1 then delete it */
             if ($existingCartItem->getQuantity() === 1) {
-                $cartItem = $existingCartItem->setQuantity(0);
+                $this->cartItemRepository->delete($existingCartItem);
             } else {
                 /** Otherwise update quantity of existing cart item */
-                $cartItem = $existingCartItem->setQuantity($existingCartItem->getQuantity() + 1);
+                $cartItem = $existingCartItem->setQuantity($existingCartItem->getQuantity() - 1);
+                /** Save quantity to database */
+                $this->cartItemRepository->save($cartItem);
             }
 
-            $this->cartItemRepository->save($cartItem);
         }
 
         return $this->cartRepository->find($cart->getId());
+    }
+
+    /**
+     * @param Cart $cart
+     * @param int $productId
+     * @return Cart
+     * @throws \Exception
+     */
+    public function removeAllProductFromCart(Cart $cart, int $productId): Cart
+    {
+        /**
+         * Get existing cart item from cart
+         * @var $existingCartItem
+         */
+        $existingCartItem = $this->getExistingCartItemByProductId($cart, $productId);
+
+        /** ensure cart item does exist before trying to delete */
+        if ( ! is_null($existingCartItem)) {
+            $this->cartItemRepository->delete($existingCartItem);
+        }
+
+        return $this->cartRepository->find($cart->getId());
+    }
+
+    /**
+     * @param Cart $cart
+     * @return Cart
+     * @throws \Exception
+     */
+    public function clearCart(Cart $cart = null): Cart
+    {
+        /** If cart is null then get current cart */
+        if (is_null($cart)) {
+            $cart = $this->getCart();
+        }
+
+        /** @var CartItem $cartItem */
+        foreach ($cart->getCartItems() as $cartItem) {
+            $this->cartItemRepository->delete($cartItem);
+        }
+
+        return $this->getCart();
     }
 
     /**
@@ -159,12 +223,10 @@ class CartService
      */
     private function getExistingCartItemByProductId(Cart $cart, int $productId)
     {
-        /** @var CartItem $cartItem */
         $existingCartItem = null;
-        foreach ($cart->getCartItems() as $cartItemId) {
+        /** @var CartItem $cartItem */
+        foreach ($cart->getCartItems() as $cartItem) {
             if (is_null($existingCartItem)) {
-                /** @var CartItem $cartItem */
-                $cartItem = $this->cartRepository->find($cartItemId);
                 if ($cartItem->getProductId() === $productId) {
                     $existingCartItem = $cartItem;
                 }

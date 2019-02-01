@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Simple Cart - Welcome!{% endblock %}</title>
+        <title>Simple Cart - {% block title %}Welcome!{% endblock %}</title>
         <style>
             .wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
         </style>
@@ -11,10 +11,14 @@
     </head>
     <body>
         <div class="wrapper">
-            <h1 style="text-align: center">Simple Cart - Cart: R {{ cart.total }} ({{ cart.totalItems }})</h1>
+            <h1 style="text-align: center">Simple Cart - Cart: R {{ cart.total | number_format }} ({{ cart.totalItems }}) | {% block title_link %}{% endblock %}</h1>
         </div>
         <div class="wrapper">
             {% block body %}{% endblock %}
+        </div>
+        <div class="json-data">
+            <h1>JSON Models</h1>
+            {% block json_data %}{% endblock %}
         </div>
         {% block javascripts %}{% endblock %}
     </body>

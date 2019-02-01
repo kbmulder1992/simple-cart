@@ -13,6 +13,7 @@ class ProductEntityBuilder extends AbstractEntityBuilder
     public static function toArrayList(array $products = []): array
     {
         $productsArray = [];
+        /** @var Product $product */
         foreach ($products as $product) {
             $productsArray[] = self::toArraySingle($product);
         }

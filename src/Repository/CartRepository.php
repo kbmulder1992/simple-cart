@@ -15,6 +15,10 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
  */
 class CartRepository extends ServiceEntityRepository
 {
+    /**
+     * CartRepository constructor.
+     * @param RegistryInterface $registry
+     */
     public function __construct(RegistryInterface $registry)
     {
         parent::__construct($registry, Cart::class);
@@ -41,7 +45,7 @@ class CartRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
             return $cart;
         } catch (Exception $exception) {
-            throw new Exception("Failed to save cart to database. Error: " . $exception->getMessage(), $exception);
+            throw new Exception("Failed to save cart to database. Error: " . $exception->getMessage());
         }
     }
 }

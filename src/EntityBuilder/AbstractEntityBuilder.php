@@ -14,8 +14,8 @@ abstract class AbstractEntityBuilder
     {
         return [
             'id' => $entity->getId(),
-            'createdDate' => $entity->getCreatedDate(),
-            'updatedDate' => $entity->getUpdatedDate(),
+            'createdDate' => $entity->getCreatedDate()->format('Y-m-d h:i:s'),
+            'updatedDate' => is_null($entity->getUpdatedDate()) ? null : $entity->getUpdatedDate()->format('Y-m-d h:i:s'),
         ];
     }
 

@@ -2,12 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\Cart;
 use App\Entity\Product;
-use App\EntityBuilder\PageModelBuilder;
+use App\EntityBuilder\CartEntityBuilder;
+use App\EntityBuilder\OrderEntityBuilder;
 use App\EntityBuilder\ProductEntityBuilder;
+use App\Repository\OrderRepository;
+use App\Service\CartService;
+use App\Service\OrderService;
 use App\Service\ProductService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
@@ -17,24 +21,50 @@ class HomeController extends AbstractController
      */
     private $productService;
     /**
+     * @var CartService
+     */
+    private $cartService;
+    /**
+     * @var OrderRepository
+     */
+    private $orderRepository;
+    /**
      * @var ProductEntityBuilder $productEntityBuilder
      */
     private $productEntityBuilder;
+    /**
+     * @var CartEntityBuilder
+     */
+    private $cartEntityBuilder;
+    /**
+     * @var OrderEntityBuilder
+     */
+    private $orderEntityBuilder;
 
     /**
      * HomeController constructor.
      * @param ProductService $productService
+     * @param CartService $cartService
+     * @param OrderRepository $orderRepository
      * @param ProductEntityBuilder $productEntityBuilder
+     * @param CartEntityBuilder $cartEntityBuilder
+     * @param OrderEntityBuilder $orderEntityBuilder
      */
-    public function __construct(ProductService $productService, ProductEntityBuilder $productEntityBuilder)
+    public function __construct(ProductService $productService, CartService $cartService, OrderRepository $orderRepository,
+                                ProductEntityBuilder $productEntityBuilder, CartEntityBuilder $cartEntityBuilder, OrderEntityBuilder $orderEntityBuilder)
     {
         $this->productService = $productService;
+        $this->cartService = $cartService;
+        $this->orderRepository = $orderRepository;
         $this->productEntityBuilder = $productEntityBuilder;
+        $this->cartEntityBuilder = $cartEntityBuilder;
+        $this->orderEntityBuilder = $orderEntityBuilder;
     }
 
     /**
      * @Route("/", name = "home")
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
     public function home()
     {
@@ -45,13 +75,21 @@ class HomeController extends AbstractController
         $products = $this->productService->findAll();
 
         /**
+         * Get users current cart
+         * @var Cart $cart
+         */
+        $cart = $this->cartService->getCart();
+
+        /**
          * Convert to model for view
          * @var array $model
          */
-        $model = array_merge(PageModelBuilder::toDefaultArray(), [
+        $model = [
+            'cart' => $this->cartEntityBuilder->toArraySingle($cart),
             'products' => $this->productEntityBuilder->toArrayList($products),
-            'message' => $this->getErrorOrSuccessMessage()
-        ]);
+            'message' => $this->getErrorOrSuccessMessage(),
+            'orders' => $this->orderEntityBuilder->toArrayList($this->orderRepository->findAll())
+        ];
 
         /** Render home page twig template with products model */
         return $this->render('home.html.twig', $model);
@@ -59,34 +97,17 @@ class HomeController extends AbstractController
 
     /**
      * @Route("/initialise-product-data", name = "product_data_initialiser")
+     * @Route("/initialise-product-data/{limit}", name = "product_data_initialiser_with_limit")
+     * @param int $limit
      * @return \Symfony\Component\HttpFoundation\JsonResponse
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function productDataInitialiser()
+    public function productDataInitialiser(int $limit = 25)
     {
         /** @var Product[] $productsGenerated */
-        $productsGenerated = [];
-
-        try {
-            /**
-             * Generate 25 sample products
-             */
-            for ($i = 1; $i <= 25; ++ $i) {
-                $product = new Product();
-                $product->setName('Sample Product #' . $i);
-                $product->setPrice(23 * $i);
-                $product = $this->productService->save($product);
-                $productsGenerated[] = $this->productEntityBuilder->toArray($product);
-            }
-
-            /**
-             * Return json content of generated products
-             */
-            return $this->json($productsGenerated);
-        } catch (Exception $exception) {
-            throw new Exception("Failed to generated orders.", $exception);
-        }
+        $productsGenerated = $this->productService->initialiseDefaultData($limit);
+        return $this->json($this->productEntityBuilder->toArrayList($productsGenerated));
     }
 
     /**
@@ -94,10 +115,16 @@ class HomeController extends AbstractController
      */
     private function getErrorOrSuccessMessage(): array
     {
+        $message = array_key_exists('success', $_GET) && isset($_GET['success'])
+            ? 'Success: ' . $_GET['success']
+            : (array_key_exists('error', $_GET) && isset($_GET['error'])
+                ? 'Error: '. $_GET['error']
+                : '');
+
         return [
             'valid' => array_key_exists('success', $_GET) || array_key_exists('error', $_GET),
-            'type' => array_key_exists('success', $_GET) ? 'success' : 'error',
-            'value' => array_key_exists('success', $_GET) && $_GET['success'] === 'product_added' ? 'Product Added' : (array_key_exists('error', $_GET) ? 'Error: '. $_GET['error'] : '')
+            'type' => array_key_exists('success', $_GET)  ? 'success' : 'error',
+            'value' => $message
         ];
     }
 

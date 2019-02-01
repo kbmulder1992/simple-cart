@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Cart{% endblock %}
+
+{% block title_link %}<a href="/">View Products</a>{% endblock %}
+
+{% block body %}
+<div class="wrapper">
+    <h1>Cart</h1>
+
+    {% if message.valid %}
+    <h3>{{ message.value }}</h3>
+    {% endif %}
+
+    <p><strong>Total:</strong> R {{ cart.total | number_format }} with {{ cart.totalItems }} item(s)</p>
+    <p><a href="/cart/clear">Clear Cart</a></p>
+    <p><a href="/">Continue Shopping</a></p>
+
+    <table width="100%" border="1" cellpadding="0" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th width="10%">Quantity</th>
+                <th width="20%">Total</th>
+                <th width="20%"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if cart.items is empty %}
+            <tr>
+                <td colspan="4">No items in cart, consider <a href="/">shopping</a></td>
+            </tr>
+            {% endif %}
+            {% for cartItem in cart.items %}
+            <tr>
+                <td>{{ cartItem.product.name }}</td>
+                <td>{{ cartItem.quantity }}</td>
+                <td>R {{ cartItem.total | number_format }}</td>
+                <td>
+                    <a href="/cart/add-product/{{ cartItem.product.id }}">+1 to cart</a><br />
+                    <a href="/cart/remove-product/{{ cartItem.product.id }}">-1 from cart</a><br />
+                    <a href="/cart/clear-product/{{ cartItem.product.id }}">clear from cart</a><br />
+                </td>
+            </tr>
+            {% endfor %}
+            {% if cart.items is not empty %}
+            <tr>
+                <td colspan="3">&nbsp;</td>
+                <td><br /><br /><a href="/order">Place Order</a></td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block json_data %}
+    <style>
+        pre {
+            white-space: pre-wrap;       /* Since CSS 2.1 */
+            white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;
+        }
+    </style>
+    <pre>CART :: {{ cart | json_encode }}</pre>
+{% endblock %}

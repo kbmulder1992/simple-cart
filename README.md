@@ -1,9 +1,13 @@
 # simple-cart
 Simple Cart &amp; Order checkout using Symfony (PHP)
 
+## Author
+- Kyle Mulder
+
 ## Requirements
 - PHP 7.2
   - PHP MySQL driver
+- MySQL
 - Composer
 
 ## Setup
@@ -13,7 +17,6 @@ Simple Cart &amp; Order checkout using Symfony (PHP)
 - Setup Database:
   - Run `php bin/console doctrine:database:create` to create database as per `.env` setting
   - Run `php bin/console doctrine:migrations:migrate` to create entity tables
-- Run `phpunit` to run tests
 - Run `php bin/console server:run 127.0.0.1:9000` to view in local browser
   - Browse to `http://127.0.0.1:9000` and ensure you receive the home page.
   - If no products are loaded on the home page, browse to the following url to initialise sample product data:

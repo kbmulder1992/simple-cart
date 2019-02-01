@@ -1,4 +1,4 @@
-# simple-cart
+# simple-cart - v1.0.0
 Simple Cart &amp; Order checkout using Symfony (PHP)
 
 ## Author

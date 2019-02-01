@@ -4,6 +4,11 @@ Simple Cart &amp; Order checkout using Symfony (PHP)
 ## Author
 - Kyle Mulder
 
+## Technology Stack
+- PHP
+  - Symfony
+  - Doctrine
+
 ## Requirements
 - PHP 7.2
   - PHP MySQL driver
